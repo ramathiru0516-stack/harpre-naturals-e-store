@@ -1,18 +1,75 @@
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 
 const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const [form, setForm] = useState({ name: "", phone: "", email: "", address: "" });
   const [payment, setPayment] = useState("upi");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [whatsappLinks, setWhatsappLinks] = useState<string[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    clearCart();
+    setSubmitting(true);
+
+    try {
+      // Save order to database
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user?.id || null,
+          customer_name: form.name,
+          customer_email: form.email,
+          customer_phone: form.phone,
+          customer_address: form.address,
+          payment_method: payment,
+          total_amount: totalPrice,
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Save order items
+      const orderItems = items.map(item => ({
+        order_id: order.id,
+        product_id: item.product.id,
+        product_name: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price,
+      }));
+
+      await supabase.from("order_items").insert(orderItems);
+
+      // Send notification via edge function
+      const { data: notifData } = await supabase.functions.invoke("order-notification", {
+        body: {
+          customerName: form.name,
+          customerEmail: form.email,
+          customerPhone: form.phone,
+          items: orderItems,
+          totalAmount: totalPrice,
+          paymentMethod: payment,
+        },
+      });
+
+      if (notifData?.whatsappLinks) {
+        setWhatsappLinks(notifData.whatsappLinks);
+      }
+
+      clearCart();
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Order error:", err);
+      alert("There was an error placing your order. Please try again.");
+    }
+    setSubmitting(false);
   };
 
   if (submitted) {
@@ -20,8 +77,35 @@ const CheckoutPage = () => {
       <div className="container mx-auto px-4 py-16 text-center max-w-md">
         <CheckCircle className="h-16 w-16 text-primary mx-auto mb-6" />
         <h1 className="font-display text-3xl font-bold text-foreground mb-4">Order Placed!</h1>
-        <p className="font-body text-muted-foreground mb-8">Thank you for your order. We'll contact you shortly to confirm your order details.</p>
-        <Link to="/shop" className="herb-btn-primary">Continue Shopping</Link>
+        <p className="font-body text-muted-foreground mb-6">Thank you for your order. We'll contact you shortly to confirm.</p>
+
+        {payment === "upi" && (
+          <div className="herb-card p-4 mb-6 text-left">
+            <p className="font-display text-sm font-semibold text-foreground mb-2">UPI Payment Details</p>
+            <p className="font-body text-sm text-muted-foreground">UPI ID: harvinheyansh-1@okicici</p>
+            <p className="font-body text-xs text-muted-foreground mt-1">Please send ₹{totalPrice} and share the screenshot.</p>
+          </div>
+        )}
+
+        {payment === "bank" && (
+          <div className="herb-card p-4 mb-6 text-left">
+            <p className="font-display text-sm font-semibold text-foreground mb-2">Bank Transfer Details</p>
+            <p className="font-body text-sm text-muted-foreground">Account Name: Harpre Naturals</p>
+            <p className="font-body text-sm text-muted-foreground">Account No: 5010047907515</p>
+            <p className="font-body text-sm text-muted-foreground">IFSC: HDFC0000403</p>
+            <p className="font-body text-sm text-muted-foreground">Bank: HDFC Bank</p>
+          </div>
+        )}
+
+        {whatsappLinks.length > 0 && (
+          <a href={whatsappLinks[0]} target="_blank" rel="noopener noreferrer" className="herb-btn-primary mb-4 inline-block">
+            Confirm on WhatsApp
+          </a>
+        )}
+
+        <div className="mt-4">
+          <Link to="/shop" className="herb-btn-outline">Continue Shopping</Link>
+        </div>
       </div>
     );
   }
@@ -40,6 +124,13 @@ const CheckoutPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="herb-section-title mb-6">Checkout</h1>
+
+      {!user && (
+        <div className="herb-card p-4 mb-6 flex items-center justify-between">
+          <p className="font-body text-sm text-muted-foreground">Have an account? Sign in to track your orders.</p>
+          <Link to="/login" className="herb-btn-outline text-sm py-2 px-4">Sign In</Link>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
@@ -87,7 +178,9 @@ const CheckoutPage = () => {
             <div className="border-t border-border pt-4 mb-6">
               <div className="flex justify-between font-sans font-bold text-foreground text-lg"><span>Total</span><span>₹{totalPrice}</span></div>
             </div>
-            <button type="submit" className="herb-btn-primary w-full text-center">Place Order</button>
+            <button type="submit" disabled={submitting} className="herb-btn-primary w-full text-center">
+              {submitting ? "Placing Order..." : "Place Order"}
+            </button>
           </div>
         </div>
       </form>

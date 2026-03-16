@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X, Search } from "lucide-react";
+import { ShoppingCart, Menu, X, Search, User, Shield } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.jpeg";
 
 const navLinks = [
@@ -16,6 +17,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { totalItems } = useCart();
+  const { user, isAdmin, signOut } = useAuth();
   const location = useLocation();
 
   return (
@@ -38,7 +40,7 @@ const Navbar = () => {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button onClick={() => setSearchOpen(!searchOpen)} className="p-2 text-muted-foreground hover:text-primary transition-colors">
             <Search className="h-5 w-5" />
           </button>
@@ -50,6 +52,20 @@ const Navbar = () => {
               </span>
             )}
           </Link>
+          {isAdmin && (
+            <Link to="/admin" className="p-2 text-muted-foreground hover:text-primary transition-colors" title="Admin">
+              <Shield className="h-5 w-5" />
+            </Link>
+          )}
+          {user ? (
+            <button onClick={signOut} className="p-2 text-muted-foreground hover:text-primary transition-colors" title="Sign Out">
+              <User className="h-5 w-5" />
+            </button>
+          ) : (
+            <Link to="/login" className="p-2 text-muted-foreground hover:text-primary transition-colors" title="Sign In">
+              <User className="h-5 w-5" />
+            </Link>
+          )}
           <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 text-muted-foreground">
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -81,6 +97,12 @@ const Navbar = () => {
               {l.label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link to="/admin" onClick={() => setMobileOpen(false)} className="block font-body text-sm py-2 text-muted-foreground">Admin Dashboard</Link>
+          )}
+          {!user && (
+            <Link to="/login" onClick={() => setMobileOpen(false)} className="block font-body text-sm py-2 text-muted-foreground">Sign In</Link>
+          )}
         </nav>
       )}
     </header>
