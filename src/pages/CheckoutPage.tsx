@@ -1,0 +1,98 @@
+import { useState } from "react";
+import { useCart } from "@/contexts/CartContext";
+import { Link } from "react-router-dom";
+import { CheckCircle } from "lucide-react";
+
+const CheckoutPage = () => {
+  const { items, totalPrice, clearCart } = useCart();
+  const [form, setForm] = useState({ name: "", phone: "", email: "", address: "" });
+  const [payment, setPayment] = useState("upi");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitted(true);
+    clearCart();
+  };
+
+  if (submitted) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center max-w-md">
+        <CheckCircle className="h-16 w-16 text-primary mx-auto mb-6" />
+        <h1 className="font-display text-3xl font-bold text-foreground mb-4">Order Placed!</h1>
+        <p className="font-body text-muted-foreground mb-8">Thank you for your order. We'll contact you shortly to confirm your order details.</p>
+        <Link to="/shop" className="herb-btn-primary">Continue Shopping</Link>
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="font-display text-2xl text-foreground mb-4">No items to checkout</h1>
+        <Link to="/shop" className="herb-btn-primary">Go to Shop</Link>
+      </div>
+    );
+  }
+
+  const inputClass = "w-full px-4 py-3 rounded-xl border border-border bg-muted/30 font-body text-sm focus:outline-none focus:ring-2 focus:ring-primary/30";
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="herb-section-title mb-6">Checkout</h1>
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          <div className="herb-card p-6">
+            <h2 className="font-display text-lg font-semibold text-foreground mb-4">Delivery Information</h2>
+            <div className="space-y-4">
+              <input required placeholder="Full Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputClass} />
+              <input required placeholder="Phone Number" type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className={inputClass} />
+              <input required placeholder="Email Address" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={inputClass} />
+              <textarea required placeholder="Delivery Address" rows={3} value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} className={inputClass} />
+            </div>
+          </div>
+
+          <div className="herb-card p-6">
+            <h2 className="font-display text-lg font-semibold text-foreground mb-4">Payment Method</h2>
+            <div className="space-y-3">
+              {[
+                { value: "upi", label: "UPI Payment", desc: "UPI ID: harvinheyansh-1@okicici" },
+                { value: "cod", label: "Cash on Delivery", desc: "Pay when your order arrives" },
+                { value: "bank", label: "Bank Transfer", desc: "HDFC Bank – A/C: 5010047907515, IFSC: HDFC0000403" },
+              ].map(opt => (
+                <label key={opt.value} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${payment === opt.value ? "border-primary bg-primary/5" : "border-border"}`}>
+                  <input type="radio" name="payment" value={opt.value} checked={payment === opt.value} onChange={() => setPayment(opt.value)} className="mt-1 accent-primary" />
+                  <div>
+                    <span className="font-display text-sm font-semibold text-foreground">{opt.label}</span>
+                    <p className="font-body text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div className="herb-card p-6 sticky top-20">
+            <h2 className="font-display text-lg font-semibold text-foreground mb-4">Order Summary</h2>
+            <div className="space-y-3 mb-4">
+              {items.map(item => (
+                <div key={item.product.id} className="flex justify-between font-body text-sm">
+                  <span className="text-muted-foreground">{item.product.name} × {item.quantity}</span>
+                  <span className="text-foreground font-medium">₹{item.product.price * item.quantity}</span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-border pt-4 mb-6">
+              <div className="flex justify-between font-sans font-bold text-foreground text-lg"><span>Total</span><span>₹{totalPrice}</span></div>
+            </div>
+            <button type="submit" className="herb-btn-primary w-full text-center">Place Order</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default CheckoutPage;
