@@ -3,12 +3,22 @@ import { useState } from "react";
 import { ArrowLeft, Minus, Plus, ShoppingCart } from "lucide-react";
 import { getProductById } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
+import { productImageMap } from "@/data/productImages";
+
+const categoryEmojis: Record<string, string> = {
+  "herbal-soaps": "🧼", "hair-oils": "💧", "herbal-gels": "✨",
+  "lip-balms": "💋", "masala-powders": "🌶️", "pickles": "🫙",
+  "honey": "🍯", "face-packs": "🌿", "hair-packs": "🌾",
+  "herbal-powders": "🫧", "pre-mix-foods": "🍲",
+  "shampoo-conditioner": "🧴", "special-products": "⭐",
+};
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const product = getProductById(id || "");
   const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
+  const image = product ? productImageMap[product.id] : undefined;
 
   if (!product) {
     return (
@@ -26,11 +36,15 @@ const ProductDetailPage = () => {
       </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-        <div className="aspect-square bg-secondary/50 rounded-2xl flex items-center justify-center">
-          <span className="text-8xl">
-            {product.categorySlug === "herbal-soaps" ? "🧼" : product.categorySlug === "hair-oils" ? "💧" : product.categorySlug === "herbal-gels" ? "✨" : product.categorySlug === "lip-balms" ? "💋" : product.categorySlug === "masala-powders" ? "🌶️" : product.categorySlug === "pickles" ? "🫙" : product.categorySlug === "honey" ? "🍯" : "🌿"}
-          </span>
-        </div>
+        {image ? (
+          <div className="aspect-square rounded-2xl overflow-hidden">
+            <img src={image} alt={product.name} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="aspect-square bg-secondary/50 rounded-2xl flex items-center justify-center">
+            <span className="text-8xl">{categoryEmojis[product.categorySlug] || "🌿"}</span>
+          </div>
+        )}
 
         <div>
           <span className="herb-badge mb-3 inline-block">{product.category}</span>
