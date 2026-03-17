@@ -2,16 +2,30 @@ import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
+import { productImageMap } from "@/data/productImages";
+
+const categoryEmojis: Record<string, string> = {
+  "herbal-soaps": "🧼", "hair-oils": "💧", "herbal-gels": "✨",
+  "lip-balms": "💋", "masala-powders": "🌶️", "pickles": "🫙",
+  "honey": "🍯", "face-packs": "🌿", "hair-packs": "🌾",
+  "herbal-powders": "🫧", "pre-mix-foods": "🍲",
+  "shampoo-conditioner": "🧴", "special-products": "⭐",
+};
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
+  const image = productImageMap[product.id];
 
   return (
     <div className="herb-card group overflow-hidden flex flex-col">
       <Link to={`/product/${product.id}`} className="block aspect-square bg-muted overflow-hidden">
-        <div className="w-full h-full flex items-center justify-center bg-secondary/50 group-hover:scale-105 transition-transform duration-500">
-          <span className="text-4xl">{product.categorySlug === "herbal-soaps" ? "🧼" : product.categorySlug === "hair-oils" ? "💧" : product.categorySlug === "herbal-gels" ? "✨" : product.categorySlug === "lip-balms" ? "💋" : product.categorySlug === "masala-powders" ? "🌶️" : product.categorySlug === "pickles" ? "🫙" : product.categorySlug === "honey" ? "🍯" : "🌿"}</span>
-        </div>
+        {image ? (
+          <img src={image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-secondary/50 group-hover:scale-105 transition-transform duration-500">
+            <span className="text-4xl">{categoryEmojis[product.categorySlug] || "🌿"}</span>
+          </div>
+        )}
       </Link>
       <div className="p-4 flex flex-col flex-1">
         <span className="herb-badge mb-2 self-start">{product.category}</span>
