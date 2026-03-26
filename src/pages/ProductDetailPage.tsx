@@ -1,6 +1,6 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Minus, Plus, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingCart, Zap } from "lucide-react";
 import { getProductById } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { productImageMap } from "@/data/productImages";
@@ -17,6 +17,7 @@ const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const product = getProductById(id || "");
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [qty, setQty] = useState(1);
   const image = product ? productImageMap[product.id] : undefined;
 
@@ -80,12 +81,20 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => addToCart(product, qty)}
-            className="herb-btn-primary gap-2 w-full md:w-auto"
-          >
-            <ShoppingCart className="h-5 w-5" /> Add to Cart
-          </button>
+          <div className="flex gap-3 flex-col sm:flex-row">
+            <button
+              onClick={() => addToCart(product, qty)}
+              className="herb-btn-outline gap-2 flex-1"
+            >
+              <ShoppingCart className="h-5 w-5" /> Add to Cart
+            </button>
+            <button
+              onClick={() => { addToCart(product, qty); navigate("/checkout"); }}
+              className="herb-btn-primary gap-2 flex-1"
+            >
+              <Zap className="h-5 w-5" /> Buy Now
+            </button>
+          </div>
         </div>
       </div>
     </div>
