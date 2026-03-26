@@ -44,13 +44,22 @@ const ProductCard = ({ product }: { product: Product }) => {
             <span className="font-sans font-semibold text-foreground">₹{product.price}</span>
             {product.mrp && <span className="font-sans text-xs text-muted-foreground line-through">₹{product.mrp}</span>}
           </div>
-          <button
-            onClick={() => addToCart(product)}
-            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            aria-label="Add to cart"
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </button>
+          <div className="flex gap-1.5">
+            <button
+              onClick={handleBuyNow}
+              className="px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-xs font-semibold hover:bg-accent/80 transition-colors flex items-center gap-1"
+              aria-label="Buy now"
+            >
+              <Zap className="h-3 w-3" /> Buy
+            </button>
+            <button
+              onClick={() => addToCart(product)}
+              className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              aria-label="Add to cart"
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

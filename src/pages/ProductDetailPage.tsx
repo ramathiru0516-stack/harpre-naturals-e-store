@@ -81,12 +81,20 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => addToCart(product, qty)}
-            className="herb-btn-primary gap-2 w-full md:w-auto"
-          >
-            <ShoppingCart className="h-5 w-5" /> Add to Cart
-          </button>
+          <div className="flex gap-3 flex-col sm:flex-row">
+            <button
+              onClick={() => addToCart(product, qty)}
+              className="herb-btn-outline gap-2 flex-1"
+            >
+              <ShoppingCart className="h-5 w-5" /> Add to Cart
+            </button>
+            <button
+              onClick={() => { addToCart(product, qty); navigate("/checkout"); }}
+              className="herb-btn-primary gap-2 flex-1"
+            >
+              <Zap className="h-5 w-5" /> Buy Now
+            </button>
+          </div>
         </div>
       </div>
     </div>
