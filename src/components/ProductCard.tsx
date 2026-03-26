@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ShoppingCart, Zap } from "lucide-react";
 import { Product } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { productImageMap } from "@/data/productImages";
