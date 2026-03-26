@@ -12,7 +12,8 @@ const CheckoutPage = () => {
   const [payment, setPayment] = useState("upi");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [whatsappLinks, setWhatsappLinks] = useState<string[]>([]);
+  const [adminWhatsappLinks, setAdminWhatsappLinks] = useState<string[]>([]);
+  const [customerWhatsappLink, setCustomerWhatsappLink] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,10 +62,13 @@ const CheckoutPage = () => {
         },
       });
 
-      if (notifData?.whatsappLinks) {
-        setWhatsappLinks(notifData.whatsappLinks);
-        // Auto-open first WhatsApp link to send order details
-        window.open(notifData.whatsappLinks[0], "_blank");
+      if (notifData?.adminWhatsappLinks) {
+        setAdminWhatsappLinks(notifData.adminWhatsappLinks);
+        // Auto-open admin WhatsApp link
+        window.open(notifData.adminWhatsappLinks[0], "_blank");
+      }
+      if (notifData?.customerWhatsappLink) {
+        setCustomerWhatsappLink(notifData.customerWhatsappLink);
       }
 
       clearCart();
@@ -101,14 +105,23 @@ const CheckoutPage = () => {
           </div>
         )}
 
-        {whatsappLinks.length > 0 && (
+        {customerWhatsappLink && (
           <div className="space-y-3 mb-4">
-            <p className="font-body text-sm text-muted-foreground">Send order details via WhatsApp to confirm:</p>
-            <a href={whatsappLinks[0]} target="_blank" rel="noopener noreferrer" className="herb-btn-primary inline-block w-full text-center">
+            <p className="font-body text-sm font-semibold text-foreground">📩 Receive your order confirmation:</p>
+            <a href={customerWhatsappLink} target="_blank" rel="noopener noreferrer" className="herb-btn-primary inline-block w-full text-center">
+              💚 Get Thank You Message on WhatsApp
+            </a>
+          </div>
+        )}
+
+        {adminWhatsappLinks.length > 0 && (
+          <div className="space-y-3 mb-4">
+            <p className="font-body text-sm text-muted-foreground">Send order details to Harpre Naturals:</p>
+            <a href={adminWhatsappLinks[0]} target="_blank" rel="noopener noreferrer" className="herb-btn-outline inline-block w-full text-center">
               📱 Send to 8667611271
             </a>
-            {whatsappLinks[1] && (
-              <a href={whatsappLinks[1]} target="_blank" rel="noopener noreferrer" className="herb-btn-outline inline-block w-full text-center">
+            {adminWhatsappLinks[1] && (
+              <a href={adminWhatsappLinks[1]} target="_blank" rel="noopener noreferrer" className="herb-btn-outline inline-block w-full text-center">
                 📱 Send to 9790623268
               </a>
             )}
