@@ -62,10 +62,13 @@ const CheckoutPage = () => {
         },
       });
 
-      if (notifData?.whatsappLinks) {
-        setWhatsappLinks(notifData.whatsappLinks);
-        // Auto-open first WhatsApp link to send order details
-        window.open(notifData.whatsappLinks[0], "_blank");
+      if (notifData?.adminWhatsappLinks) {
+        setAdminWhatsappLinks(notifData.adminWhatsappLinks);
+        // Auto-open admin WhatsApp link
+        window.open(notifData.adminWhatsappLinks[0], "_blank");
+      }
+      if (notifData?.customerWhatsappLink) {
+        setCustomerWhatsappLink(notifData.customerWhatsappLink);
       }
 
       clearCart();
