@@ -102,9 +102,17 @@ const CheckoutPage = () => {
         )}
 
         {whatsappLinks.length > 0 && (
-          <a href={whatsappLinks[0]} target="_blank" rel="noopener noreferrer" className="herb-btn-primary mb-4 inline-block">
-            Confirm on WhatsApp
-          </a>
+          <div className="space-y-3 mb-4">
+            <p className="font-body text-sm text-muted-foreground">Send order details via WhatsApp to confirm:</p>
+            <a href={whatsappLinks[0]} target="_blank" rel="noopener noreferrer" className="herb-btn-primary inline-block w-full text-center">
+              📱 Send to 8667611271
+            </a>
+            {whatsappLinks[1] && (
+              <a href={whatsappLinks[1]} target="_blank" rel="noopener noreferrer" className="herb-btn-outline inline-block w-full text-center">
+                📱 Send to 9790623268
+              </a>
+            )}
+          </div>
         )}
 
         <div className="mt-4">
