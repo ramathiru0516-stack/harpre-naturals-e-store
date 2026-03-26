@@ -17,6 +17,7 @@ const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const product = getProductById(id || "");
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [qty, setQty] = useState(1);
   const image = product ? productImageMap[product.id] : undefined;
 
