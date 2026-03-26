@@ -14,7 +14,13 @@ const categoryEmojis: Record<string, string> = {
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const image = productImageMap[product.id];
+
+  const handleBuyNow = () => {
+    addToCart(product, 1);
+    navigate("/checkout");
+  };
 
   return (
     <div className="herb-card group overflow-hidden flex flex-col">
