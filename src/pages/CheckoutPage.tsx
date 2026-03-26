@@ -54,6 +54,7 @@ const CheckoutPage = () => {
           customerName: form.name,
           customerEmail: form.email,
           customerPhone: form.phone,
+          customerAddress: form.address,
           items: orderItems,
           totalAmount: totalPrice,
           paymentMethod: payment,
@@ -62,6 +63,8 @@ const CheckoutPage = () => {
 
       if (notifData?.whatsappLinks) {
         setWhatsappLinks(notifData.whatsappLinks);
+        // Auto-open first WhatsApp link to send order details
+        window.open(notifData.whatsappLinks[0], "_blank");
       }
 
       clearCart();
