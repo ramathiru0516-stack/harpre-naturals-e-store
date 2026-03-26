@@ -12,7 +12,8 @@ const CheckoutPage = () => {
   const [payment, setPayment] = useState("upi");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [whatsappLinks, setWhatsappLinks] = useState<string[]>([]);
+  const [adminWhatsappLinks, setAdminWhatsappLinks] = useState<string[]>([]);
+  const [customerWhatsappLink, setCustomerWhatsappLink] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
