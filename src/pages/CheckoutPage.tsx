@@ -18,11 +18,14 @@ const CheckoutPage = () => {
     e.preventDefault();
     setSubmitting(true);
 
+    const orderId = crypto.randomUUID();
+
     try {
       // Save order to database
-      const { data: order, error: orderError } = await supabase
+      const { error: orderError } = await supabase
         .from("orders")
         .insert({
+          id: orderId,
           user_id: user?.id || null,
           customer_name: form.name,
           customer_email: form.email,
@@ -30,15 +33,13 @@ const CheckoutPage = () => {
           customer_address: form.address,
           payment_method: payment,
           total_amount: totalPrice,
-        })
-        .select()
-        .single();
+        });
 
       if (orderError) throw orderError;
 
       // Save order items
       const orderItems = items.map(item => ({
-        order_id: order.id,
+        order_id: orderId,
         product_id: item.product.id,
         product_name: item.product.name,
         quantity: item.quantity,
