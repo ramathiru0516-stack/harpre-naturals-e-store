@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { productImageMap } from "@/data/productImages";
 import { Link } from "react-router-dom";
-import { CheckCircle, Copy, Minus, Plus, Leaf, Heart } from "lucide-react";
+import { CheckCircle, Copy, Minus, Plus, Leaf, Heart, Upload, X, Image } from "lucide-react";
 
 const UPI_ID = "harvinheyansh-1@okicici";
 const QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${UPI_ID}`;
@@ -16,8 +16,11 @@ const CheckoutPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [adminWhatsappLinks, setAdminWhatsappLinks] = useState<string[]>([]);
   const [customerWhatsappLink, setCustomerWhatsappLink] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const copyUPI = () => {
     navigator.clipboard.writeText(UPI_ID);
@@ -25,13 +28,45 @@ const CheckoutPage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setScreenshotFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setScreenshotPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const removeScreenshot = () => {
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!screenshotFile) {
+      alert("Please upload your payment screenshot to confirm the order.");
+      return;
+    }
     setSubmitting(true);
     const orderId = crypto.randomUUID();
     const fullAddress = `${form.address}, ${form.city} - ${form.pincode}`;
 
     try {
+      // Upload screenshot
+      const fileExt = screenshotFile.name.split(".").pop();
+      const filePath = `${orderId}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("payment-screenshots")
+        .upload(filePath, screenshotFile);
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("payment-screenshots")
+        .getPublicUrl(filePath);
+      const screenshotUrl = urlData.publicUrl;
+
       const { error: orderError } = await supabase.from("orders").insert({
         id: orderId,
         user_id: user?.id || null,
@@ -41,6 +76,7 @@ const CheckoutPage = () => {
         customer_address: fullAddress,
         payment_method: "upi",
         total_amount: totalPrice,
+        payment_screenshot_url: screenshotUrl,
       });
       if (orderError) throw orderError;
 
@@ -196,13 +232,56 @@ const CheckoutPage = () => {
             {copied && <p className="text-xs text-primary mt-1">Copied!</p>}
           </div>
 
-          <p className="font-body text-sm text-muted-foreground text-center mb-2">
+          {/* Upload Payment Screenshot */}
+          <div className="mt-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+              id="screenshot-upload"
+            />
+            {screenshotPreview ? (
+              <div className="relative rounded-xl border-2 border-primary/30 bg-primary/5 p-3">
+                <div className="flex items-center gap-3">
+                  <img src={screenshotPreview} alt="Payment screenshot" className="w-16 h-16 rounded-lg object-cover" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-sm font-semibold text-foreground truncate">{screenshotFile?.name}</p>
+                    <p className="font-body text-xs text-primary">✓ Screenshot uploaded</p>
+                  </div>
+                  <button type="button" onClick={removeScreenshot} className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <label
+                htmlFor="screenshot-upload"
+                className="flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/40 cursor-pointer transition-colors bg-muted/10"
+              >
+                <Upload className="h-6 w-6 text-primary" />
+                <span className="font-display text-sm font-semibold text-primary">Upload Payment Screenshot</span>
+                <span className="font-body text-xs text-muted-foreground">Required to confirm order</span>
+              </label>
+            )}
+          </div>
+
+          <p className="font-body text-sm text-muted-foreground text-center mt-4">
             Total: <span className="font-bold text-foreground text-lg">₹{totalPrice}</span>
           </p>
         </div>
 
         {/* Confirm Order Button */}
-        <button type="submit" disabled={submitting} className="herb-btn-primary w-full py-4 text-base font-bold rounded-xl">
+        <button
+          type="submit"
+          disabled={submitting || !screenshotFile}
+          className={`w-full py-4 text-base font-bold rounded-xl transition-colors ${
+            screenshotFile
+              ? "herb-btn-primary"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
+          }`}
+        >
           {submitting ? "Placing Order..." : "Confirm Order ✅"}
         </button>
         <p className="font-body text-xs text-muted-foreground text-center">
