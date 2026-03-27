@@ -58,6 +58,7 @@ export type Database = {
           customer_phone: string
           id: string
           payment_method: string
+          payment_screenshot_url: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -71,6 +72,7 @@ export type Database = {
           customer_phone: string
           id?: string
           payment_method: string
+          payment_screenshot_url?: string | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -84,6 +86,7 @@ export type Database = {
           customer_phone?: string
           id?: string
           payment_method?: string
+          payment_screenshot_url?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
